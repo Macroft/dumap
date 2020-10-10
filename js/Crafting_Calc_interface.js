@@ -55,7 +55,9 @@ var tierNames=["Basic","Uncommon","Advanced","Rare","Exotic"];
 
 var itemsAccordion,skillsAccordion,industryPrices,prices,recipes,german,french;
 
-var ver="2020-10-02"
+var ver = "2020-10-09"
+document.getElementById("version").innerHTML = ver;
+console.log("Crafing Calculator Version: " + ver)
 
 var language="english"
 
@@ -487,17 +489,23 @@ function createItemsAcc(list,depth,filter="",override=false)
 		//console.log("list i "+list[i]);
 		if (typeof list[i]=="object")
 		{
+			//console.log("["+i+","+depth+"]"+list[i].name);
 			var or=override;
-			if (filter!="" && cc.trans(language,list[i].name).toLowerCase().search(filter.toLowerCase())!=-1){ or=true; }
+			if (filter!="" && cc.trans(language,list[i].name).toLowerCase().search(filter.toLowerCase())!=-1){ or=true;}
 			var deeperOutput=createItemsAcc(list[i].data,depth+1,filter,or);
-			//console.log("list i "+list[i].name);
 			//console.log("found item on deeper list? "+deeperOutput[1]);
 			//console.log("override? "+or);
 			if(deeperOutput[1] || override){
 				found=true;
-				output.push(tab+'<div class="accordion unselectable"><span>+</span><span class="accordion-title">');
+				output.push(tab+'<div class="accordion unselectable"><span>');
+				if (!or && filter!="" && deeperOutput[1]) { output.push('-'); } else { output.push('+'); } 
+				output.push('</span><span class="accordion-title">');
 				output.push(cc.trans(language,list[i].name));
-				output.push('</span></div>\n'+tab+'\t<div class="accordion-panel unselectable">\n');
+				output.push('</span></div>\n'+tab+'\t<div class="accordion-panel unselectable');
+				if (!or && filter!="" && deeperOutput[1]) {
+					output.push(' active" style="display:block"')
+				}
+				output.push('">\n'); 
 				output.push(deeperOutput[0].join(''));
 				output.push(tab+'\t</div>\n');
 			}
@@ -1440,6 +1448,9 @@ function tryRestoreState(profile) {
 		// restore skils
 		try{
 			skills=state.skills;
+			if(Object.keys(skills)=== 0) {
+				throw 'skills is empty'
+			}
 			updateSkills();
 		}
 		catch(e){
@@ -1449,6 +1460,9 @@ function tryRestoreState(profile) {
 		// restore inventory
 		try{
 			inv=state.inv;
+			if(Object.keys(inv)=== 0) {
+				throw 'inv is empty'
+			}
 			updateInvList();
 		}
 		catch(e){
@@ -1459,6 +1473,9 @@ function tryRestoreState(profile) {
 		// restore items to craft
 		try{
 			craft=state.craft;
+			if(Object.keys(craft)=== 0) {
+				throw 'craft is empty'
+			}
 			updateCraftList();
 		}
 		catch(e){
@@ -1470,6 +1487,9 @@ function tryRestoreState(profile) {
 		try{
 			prices=state.prices;
 			industryPrices=state.industryPrices;
+			if(Object.keys(prices)=== 0 || Object.keys(industryPrices)=== 0 ) {
+				throw 'prices are empty'
+			}
 			updatePrices();
 		}
 		catch(e){
@@ -1478,6 +1498,9 @@ function tryRestoreState(profile) {
 		}
 		try{
 			industrySelection=state.industrySelection;
+			if(Object.keys(industrySelection)=== 0) {
+				throw 'industrySelection is empty'
+			}
 			updateIndSelections();
 		}
 		catch(e){
@@ -1489,7 +1512,7 @@ function tryRestoreState(profile) {
 			languageChanges[state.language]();
 		}
 		catch(e){
-			console.log("failed to load indsel");
+			console.log("failed to change languages");
 		}
 			
 		
